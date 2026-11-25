@@ -82,6 +82,11 @@ redespliega o reinicia, la base SQLite vuelve al estado del seed. Para
 producción real habría que mover a un plan con disco persistente (o a
 PostgreSQL, ver más abajo) antes de cargar datos reales.
 
+El Static Site del frontend tiene una regla de **Rewrite** configurada
+en Render (`/* → /index.html`), necesaria para que las rutas del SPA
+(`/dashboard`, `/tesoreria`, etc.) funcionen al entrar directo o al
+refrescar la página, no solo navegando desde dentro de la app.
+
 ## Qué falta para pasar a la Fase 3
 
 - [ ] Pantallas reales de los demás módulos (cartera, inversionistas,
