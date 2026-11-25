@@ -10,6 +10,9 @@ import { carteraRouter } from "./routes/cartera.js";
 import { inversionistasRouter } from "./routes/inversionistas.js";
 import { comisionesRouter } from "./routes/comisiones.js";
 import { juridicoRouter } from "./routes/juridico.js";
+import { adminRouter } from "./routes/admin.js";
+import { buscarRouter } from "./routes/buscar.js";
+import { alertasRouter } from "./routes/alertas.js";
 
 const app = express();
 app.use(cors());
@@ -24,6 +27,9 @@ app.use("/api/cartera", carteraRouter);
 app.use("/api/inversionistas", inversionistasRouter);
 app.use("/api/comisiones", comisionesRouter);
 app.use("/api/juridico", juridicoRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/buscar", buscarRouter);
+app.use("/api/alertas", alertasRouter);
 
 // Manejador de errores generico: las rutas ahora son asincronas (Postgres)
 // y cualquier error de consulta cae aqui via next(err) en vez de tronar

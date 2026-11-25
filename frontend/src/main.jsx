@@ -9,6 +9,9 @@ import Cartera from "./pages/Cartera.jsx";
 import Inversionistas from "./pages/Inversionistas.jsx";
 import Comisiones from "./pages/Comisiones.jsx";
 import ControlJuridico from "./pages/ControlJuridico.jsx";
+import PlaneacionFinanciera from "./pages/PlaneacionFinanciera.jsx";
+import Importaciones from "./pages/Importaciones.jsx";
+import Administracion from "./pages/Administracion.jsx";
 import { AuthProvider, useAuth } from "./auth.jsx";
 import "./styles.css";
 
@@ -69,6 +72,30 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               element={
                 <Privada>
                   <ControlJuridico />
+                </Privada>
+              }
+            />
+            <Route
+              path="planeacion"
+              element={
+                <Privada>
+                  <PlaneacionFinanciera />
+                </Privada>
+              }
+            />
+            <Route
+              path="importaciones"
+              element={
+                <Privada>
+                  <Importaciones />
+                </Privada>
+              }
+            />
+            <Route
+              path="administracion"
+              element={
+                <Privada>
+                  <Administracion />
                 </Privada>
               }
             />

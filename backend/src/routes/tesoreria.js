@@ -68,3 +68,21 @@ tesoreriaRouter.get("/movimientos", requireAuth, async (req, res, next) => {
     next(err);
   }
 });
+
+// Conciliacion (pestana de Tesoreria): marca/desmarca un movimiento como
+// conciliado. Accion reversible a proposito (un clic de mas no debe
+// requerir tocar la base de datos a mano).
+tesoreriaRouter.patch("/movimientos/:id/conciliar", requireAuth, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const conciliado = req.body?.conciliado ? 1 : 0;
+    const actualizado = await db.get(
+      "UPDATE movimiento_caja SET conciliado = ? WHERE id = ? RETURNING id, conciliado",
+      [conciliado, id]
+    );
+    if (!actualizado) return res.status(404).json({ error: "Movimiento no encontrado" });
+    res.json({ movimiento: actualizado });
+  } catch (err) {
+    next(err);
+  }
+});
