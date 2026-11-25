@@ -76,12 +76,31 @@ importacionesRouter.post("/", requireAuth, upload.single("archivo"), async (req,
       );
       const id = infoImportacion.lastInsertRowid;
 
-      for (const fila of filas) {
-        const macroId = mapaMacro.get(fila.macrocategoriaNormalizada);
+      // Con SQLite local cada INSERT era practicamente gratis (sin red de
+      // por medio). Con Postgres remoto (Neon), insertar fila por fila
+      // significa un viaje de red por cada una -con decenas de miles de
+      // filas (carga del historico completo) eso tarda minutos y puede
+      // parecer que la carga se "cuelga". Se insertan en lotes de 500
+      // filas por sentencia para reducir drasticamente el numero de
+      // round-trips, sin perder la atomicidad (sigue dentro de la misma
+      // transaccion).
+      const LOTE = 500;
+      for (let inicio = 0; inicio < filas.length; inicio += LOTE) {
+        const lote = filas.slice(inicio, inicio + LOTE);
+        const valores = [];
+        const parametros = [];
+        lote.forEach((fila, idx) => {
+          const macroId = mapaMacro.get(fila.macrocategoriaNormalizada);
+          const base = idx * 6;
+          valores.push(
+            `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, 0, $${base + 6})`
+          );
+          parametros.push(fila.fecha, fila.concepto, macroId, fila.cargo, fila.abono, id);
+        });
         await tx.run(
           `INSERT INTO movimiento_caja (fecha, concepto, macrocategoria_id, cargo, abono, conciliado, importacion_id)
-           VALUES (?, ?, ?, ?, ?, 0, ?)`,
-          [fila.fecha, fila.concepto, macroId, fila.cargo, fila.abono, id]
+           VALUES ${valores.join(", ")}`,
+          parametros
         );
       }
 
