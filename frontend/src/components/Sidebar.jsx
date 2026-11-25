@@ -6,10 +6,10 @@ const modulos = [
   { label: "Dashboard", to: "/dashboard" },
   { label: "Tesoreria", to: "/tesoreria" },
   { label: "Planeacion financiera", to: null },
-  { label: "Cartera", to: null },
-  { label: "Inversionistas", to: null },
-  { label: "Comisiones", to: null },
-  { label: "Control juridico", to: null },
+  { label: "Cartera", to: "/cartera" },
+  { label: "Inversionistas", to: "/inversionistas" },
+  { label: "Comisiones", to: "/comisiones" },
+  { label: "Control juridico", to: "/juridico" },
 ];
 
 export default function Sidebar() {

@@ -94,6 +94,64 @@ if (movCount === 0) {
   }
 }
 
+// Fase 3: datos ficticios de arranque para cartera, inversionistas,
+// comisiones y control juridico (mismo criterio que el resto del seed:
+// nunca informacion real).
+const creditoCount = db.prepare("SELECT COUNT(*) AS n FROM credito").get().n;
+if (creditoCount === 0) {
+  const creditos = [
+    ["Constructora La Campina SA de CV", 1500000, 980000, 18, "2025-03-10", "2027-03-10", "vigente"],
+    ["Erwin Arrieta", 300000, 0, 24, "2022-01-15", "2024-01-15", "liquidado"],
+    ["Inmobiliaria Sendero del Valle", 850000, 850000, 20, "2026-09-01", "2028-09-01", "vigente"],
+    ["Maria Lopez Hdz", 120000, 45000, 22, "2024-06-01", "2026-06-01", "atrasado"],
+  ];
+  const insertCredito = db.prepare(
+    `INSERT INTO credito (cliente, monto_original, saldo_actual, tasa_anual, fecha_inicio, fecha_vencimiento, estatus)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  );
+  for (const c of creditos) insertCredito.run(...c);
+}
+
+const inversionistaCount = db.prepare("SELECT COUNT(*) AS n FROM inversionista").get().n;
+if (inversionistaCount === 0) {
+  const inversionistas = [
+    ["Max Torres", 1000000, 12, "2021-05-01", "activo"],
+    ["Fondo Patrimonial Bajio", 2500000, 14, "2023-02-15", "activo"],
+    ["Juan Carlos Mendez", 500000, 11, "2020-11-01", "retirado"],
+  ];
+  const insertInv = db.prepare(
+    `INSERT INTO inversionista (nombre, capital_aportado, tasa_rendimiento, fecha_ingreso, estatus)
+     VALUES (?, ?, ?, ?, ?)`
+  );
+  for (const i of inversionistas) insertInv.run(...i);
+}
+
+const comisionCount = db.prepare("SELECT COUNT(*) AS n FROM comision").get().n;
+if (comisionCount === 0) {
+  const comisiones = [
+    ["2026-11-18", "Comision por apertura - Constructora La Campina", "Referenciador Gomez", "apertura", 6200, 1],
+    ["2026-11-05", "Comision inmobiliaria - Sendero del Valle", "Agente Ruiz", "inmobiliaria", 8500, 1],
+    ["2026-11-25", "Comision referenciador pendiente", "Referenciador Gomez", "referenciador", 3000, 0],
+  ];
+  const insertCom = db.prepare(
+    `INSERT INTO comision (fecha, concepto, beneficiario, tipo, monto, pagada) VALUES (?, ?, ?, ?, ?, ?)`
+  );
+  for (const c of comisiones) insertCom.run(...c);
+}
+
+const juridicoCount = db.prepare("SELECT COUNT(*) AS n FROM tramite_juridico").get().n;
+if (juridicoCount === 0) {
+  const tramites = [
+    ["Maria Lopez Hdz", "cobranza_judicial", "en_proceso", "2026-10-01", "Credito atrasado, se inicio proceso de cobranza"],
+    ["Inmobiliaria Sendero del Valle", "escrituracion", "abierto", "2026-11-01", "Pendiente firma ante notario"],
+    ["Constructora La Campina SA de CV", "contrato", "cerrado", "2025-03-05", "Contrato de credito firmado y archivado"],
+  ];
+  const insertTram = db.prepare(
+    `INSERT INTO tramite_juridico (cliente, tipo, estatus, fecha_inicio, notas) VALUES (?, ?, ?, ?, ?)`
+  );
+  for (const t of tramites) insertTram.run(...t);
+}
+
 console.log("Seed completado: usuarios demo, macrocategorias y movimientos ficticios cargados.");
 console.log("  demo@ttccapital.test / DemoTTC2026!  (rol: direccion)");
 console.log("  admin@ttccapital.test / AdminTTC2026! (rol: administrador)");

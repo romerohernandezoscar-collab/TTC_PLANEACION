@@ -89,5 +89,6 @@ th { color: #6B7684; font-weight: 600; font-size: 11px; text-transform: uppercas
 .badge.ok { background: #E3F3E8; color: #1E7A3D; }
 .badge.warn { background: #FDEEDC; color: #B5620A; }
 .badge.bad { background: #FBE4E4; color: #B3261E; }
+.badge.info { background: #E4EEFB; color: #1A5FB4; }
 
 .error-banner { background: #FBE4E4; color: #B3261E; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; }

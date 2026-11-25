@@ -1,8 +1,8 @@
--- Esquema inicial (Fase 1). Entidades de la seccion 6 de la propuesta
--- conceptual que ya tienen uso en Fase 1: usuario/rol (autenticacion) y
--- movimiento_caja + macrocategoria (datos que alimentan el dashboard).
--- Las entidades de cartera, inversionistas, comisiones y juridico se
--- agregan en las fases 2 a 6, cuando sus modulos entren en desarrollo.
+-- Esquema inicial (Fase 1-2). Entidades de la seccion 6 de la propuesta
+-- conceptual que ya tenian uso: usuario/rol (autenticacion) y
+-- movimiento_caja + macrocategoria (datos que alimentan el dashboard e
+-- importacion de Excel). Las entidades de cartera, inversionistas,
+-- comisiones y juridico se agregan a continuacion (Fase 3).
 
 CREATE TABLE IF NOT EXISTS rol (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,3 +55,51 @@ CREATE TABLE IF NOT EXISTS auditoria (
 );
 
 CREATE INDEX IF NOT EXISTS idx_movimiento_fecha ON movimiento_caja(fecha);
+
+-- Fase 3: cartera de creditos, inversionistas, comisiones y control
+-- juridico (seccion 6 de la propuesta conceptual). Modelo deliberadamente
+-- simple en esta fase: cada modulo es una tabla propia de lectura, sin
+-- flujo de captura todavia (eso se evaluara en fases posteriores).
+
+CREATE TABLE IF NOT EXISTS credito (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente TEXT NOT NULL,
+  monto_original REAL NOT NULL DEFAULT 0,
+  saldo_actual REAL NOT NULL DEFAULT 0,
+  tasa_anual REAL,
+  fecha_inicio TEXT NOT NULL,
+  fecha_vencimiento TEXT,
+  estatus TEXT NOT NULL DEFAULT 'vigente', -- vigente | atrasado | liquidado
+  importacion_id INTEGER REFERENCES importacion(id)
+);
+
+CREATE TABLE IF NOT EXISTS inversionista (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre TEXT NOT NULL,
+  capital_aportado REAL NOT NULL DEFAULT 0,
+  tasa_rendimiento REAL,
+  fecha_ingreso TEXT NOT NULL,
+  estatus TEXT NOT NULL DEFAULT 'activo', -- activo | retirado
+  importacion_id INTEGER REFERENCES importacion(id)
+);
+
+CREATE TABLE IF NOT EXISTS comision (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  fecha TEXT NOT NULL,
+  concepto TEXT NOT NULL,
+  beneficiario TEXT,
+  tipo TEXT, -- apertura | inmobiliaria | referenciador | otro
+  monto REAL NOT NULL DEFAULT 0,
+  pagada INTEGER NOT NULL DEFAULT 0,
+  importacion_id INTEGER REFERENCES importacion(id)
+);
+
+CREATE TABLE IF NOT EXISTS tramite_juridico (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente TEXT NOT NULL,
+  tipo TEXT NOT NULL, -- escrituracion | cobranza_judicial | contrato | otro
+  estatus TEXT NOT NULL DEFAULT 'abierto', -- abierto | en_proceso | cerrado
+  fecha_inicio TEXT NOT NULL,
+  notas TEXT,
+  importacion_id INTEGER REFERENCES importacion(id)
+);

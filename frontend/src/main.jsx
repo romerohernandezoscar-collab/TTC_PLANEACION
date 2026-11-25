@@ -5,6 +5,10 @@ import App from "./App.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Tesoreria from "./pages/Tesoreria.jsx";
+import Cartera from "./pages/Cartera.jsx";
+import Inversionistas from "./pages/Inversionistas.jsx";
+import Comisiones from "./pages/Comisiones.jsx";
+import ControlJuridico from "./pages/ControlJuridico.jsx";
 import { AuthProvider, useAuth } from "./auth.jsx";
 import "./styles.css";
 
@@ -33,6 +37,38 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               element={
                 <Privada>
                   <Tesoreria />
+                </Privada>
+              }
+            />
+            <Route
+              path="cartera"
+              element={
+                <Privada>
+                  <Cartera />
+                </Privada>
+              }
+            />
+            <Route
+              path="inversionistas"
+              element={
+                <Privada>
+                  <Inversionistas />
+                </Privada>
+              }
+            />
+            <Route
+              path="comisiones"
+              element={
+                <Privada>
+                  <Comisiones />
+                </Privada>
+              }
+            />
+            <Route
+              path="juridico"
+              element={
+                <Privada>
+                  <ControlJuridico />
                 </Privada>
               }
             />
