@@ -1,22 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../auth.jsx";
 import { apiUrl } from "../apiBase";
-
-const modulos = [
-  "Dashboard",
-  "Tesoreria",
-  "Planeacion financiera",
-  "Cartera",
-  "Inversionistas",
-  "Comisiones",
-  "Control juridico",
-  "Importaciones",
-];
+import Sidebar from "../components/Sidebar.jsx";
 
 const moneda = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" });
 
 export default function Dashboard() {
-  const { token, usuario, logout } = useAuth();
+  const { token } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
@@ -36,18 +26,7 @@ export default function Dashboard() {
 
   return (
     <div className="shell">
-      <aside className="sidebar">
-        <div className="brand">TTC Capital</div>
-        {modulos.map((m, i) => (
-          <div key={m} className={`navitem ${i === 0 ? "active" : ""}`}>
-            {m}
-          </div>
-        ))}
-        <div className="spacer" />
-        <div className="navitem" onClick={logout} style={{ cursor: "pointer" }}>
-          Cerrar sesion ({usuario?.nombre})
-        </div>
-      </aside>
+      <Sidebar />
       <main className="content">
         <div className="header-row">
           <div>
