@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../auth.jsx";
+import { apiUrl } from "../apiBase";
 
 const modulos = [
   "Dashboard",
@@ -21,7 +22,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     let activo = true;
-    fetch("/api/dashboard", { headers: { Authorization: `Bearer ${token}` } })
+    fetch(apiUrl("/api/dashboard"), { headers: { Authorization: `Bearer ${token}` } })
       .then(async (res) => {
         if (!res.ok) throw new Error("No se pudo cargar el dashboard");
         return res.json();
