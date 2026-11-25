@@ -103,19 +103,37 @@ function esperar(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// connectionTimeoutMillis de pg no cubre una resolucion DNS colgada (solo
+// mide desde que el socket ya se esta conectando), asi que ademas se pone
+// un limite manual, duro, independiente de lo que haga la libreria pg por
+// dentro: si una operacion no resuelve en "ms", seguimos adelante (y el
+// intento se cuenta como fallido) aunque la promesa original siga colgada
+// en segundo plano.
+function conLimite(promesa, ms, etiqueta) {
+  return Promise.race([
+    promesa,
+    new Promise((_resolve, reject) =>
+      setTimeout(() => reject(new Error(`${etiqueta}: sin respuesta tras ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
 export async function initSchema() {
   const schemaPath = path.join(__dirname, "schema.sql");
   const schema = fs.readFileSync(schemaPath, "utf8");
 
   // La conexion inicial a Neon a veces falla por un hipo transitorio de
-  // red entre Render y Neon (observado: el intento se queda colgado hasta
-  // que connectionTimeoutMillis lo corta). Se reintenta unas veces con
+  // red entre Render y Neon (observado: el intento se queda colgado sin
+  // ni siquiera llegar a abrir sesion en Postgres - probablemente una
+  // resolucion DNS que nunca responde). Se reintenta unas veces con
   // backoff antes de rendirse, en vez de tumbar el arranque al primer
   // fallo.
   const intentosMax = 4;
   for (let intento = 1; intento <= intentosMax; intento++) {
+    console.log(`initSchema: intento ${intento}/${intentosMax} - conectando a Postgres...`);
     try {
-      await pool.query(schema);
+      await conLimite(pool.query(schema), 20000, "initSchema");
+      console.log("initSchema: esquema aplicado correctamente.");
       return;
     } catch (err) {
       console.error(`initSchema: intento ${intento}/${intentosMax} fallo:`, err.message);
