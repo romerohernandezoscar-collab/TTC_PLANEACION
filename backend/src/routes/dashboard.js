@@ -14,8 +14,26 @@ dashboardRouter.get("/", requireAuth, (req, res) => {
   const posicionEfectivo = totales.abonos - totales.cargos;
   const metaDiasCaja = 19.5;
   const saldoMinimo = 250000;
-  const gastoDiarioPromedio = totales.cargos > 0 ? totales.cargos / 30 : 1;
-  const diasCaja = Number((posicionEfectivo / gastoDiarioPromedio).toFixed(1));
+
+  // "Dias de caja" = posicion de efectivo / gasto diario promedio reciente.
+  // Antes se dividia entre el TOTAL historico de cargos / 30, lo que daba
+  // numeros absurdos en cuanto el historico dejo de ser de solo unas
+  // semanas (p. ej. al cargar anios de datos reales). Ahora el gasto
+  // diario se calcula sobre una ventana movil de 30 dias que termina en
+  // la fecha mas reciente registrada (no en "hoy"), para que siga
+  // funcionando igual con datos demo o con datos reales historicos.
+  const fechaMax = db.prepare("SELECT MAX(fecha) AS f FROM movimiento_caja").get().f;
+  let cargos30d = 0;
+  if (fechaMax) {
+    cargos30d = db
+      .prepare(
+        `SELECT COALESCE(SUM(cargo),0) AS cargos FROM movimiento_caja
+         WHERE fecha >= date(?, '-29 days') AND fecha <= ?`
+      )
+      .get(fechaMax, fechaMax).cargos;
+  }
+  const gastoDiarioPromedio = cargos30d / 30;
+  const diasCaja = gastoDiarioPromedio > 0 ? Number((posicionEfectivo / gastoDiarioPromedio).toFixed(1)) : null;
   const porcentajeSaldoMinimo = Number(((posicionEfectivo / saldoMinimo) * 100).toFixed(1));
 
   const movimientosRecientes = db

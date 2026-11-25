@@ -44,9 +44,19 @@ export default function Dashboard() {
               <KpiCard label="Posicion de efectivo" value={moneda.format(data.kpis.posicion_efectivo)} />
               <KpiCard
                 label="Dias de caja"
-                value={data.kpis.dias_caja}
-                badge={data.kpis.dias_caja < data.kpis.meta_dias_caja ? "bad" : "ok"}
-                badgeText={`Meta: ${data.kpis.meta_dias_caja} dias`}
+                value={data.kpis.dias_caja === null ? "N/A" : data.kpis.dias_caja}
+                badge={
+                  data.kpis.dias_caja === null
+                    ? "warn"
+                    : data.kpis.dias_caja < data.kpis.meta_dias_caja
+                    ? "bad"
+                    : "ok"
+                }
+                badgeText={
+                  data.kpis.dias_caja === null
+                    ? "Sin egresos en los ultimos 30 dias"
+                    : `Meta: ${data.kpis.meta_dias_caja} dias`
+                }
               />
               <KpiCard
                 label="% del saldo minimo"
