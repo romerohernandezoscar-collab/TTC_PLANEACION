@@ -34,6 +34,19 @@ const pool = new Pool({
   // Neon exige TLS; en un Postgres local de desarrollo (sin TLS) se
   // desactiva automaticamente.
   ssl: /localhost|127\.0\.0\.1/.test(connectionString) ? false : { rejectUnauthorized: false },
+  // Por defecto pg no tiene limite de tiempo para establecer la conexion:
+  // si Render no logra alcanzar a Neon (problema de red transitorio), el
+  // proceso se queda colgado para siempre en vez de fallar. Con esto, si
+  // no conecta en 15s se lanza un error y el arranque falla rapido (y
+  // Render puede reintentar) en vez de agotar el chequeo de puerto.
+  connectionTimeoutMillis: 15000,
+});
+
+pool.on("error", (err) => {
+  // Error en un cliente ocioso del pool (ej. la conexion con Neon se cayo).
+  // Sin este handler, un error asincrono aqui tumba el proceso entero sin
+  // log util.
+  console.error("Error inesperado en el pool de Postgres:", err);
 });
 
 // Convierte los placeholders estilo SQLite ("?") que usaba el codigo
@@ -86,8 +99,28 @@ export async function transaction(fn) {
   }
 }
 
+function esperar(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function initSchema() {
   const schemaPath = path.join(__dirname, "schema.sql");
   const schema = fs.readFileSync(schemaPath, "utf8");
-  await pool.query(schema);
+
+  // La conexion inicial a Neon a veces falla por un hipo transitorio de
+  // red entre Render y Neon (observado: el intento se queda colgado hasta
+  // que connectionTimeoutMillis lo corta). Se reintenta unas veces con
+  // backoff antes de rendirse, en vez de tumbar el arranque al primer
+  // fallo.
+  const intentosMax = 4;
+  for (let intento = 1; intento <= intentosMax; intento++) {
+    try {
+      await pool.query(schema);
+      return;
+    } catch (err) {
+      console.error(`initSchema: intento ${intento}/${intentosMax} fallo:`, err.message);
+      if (intento === intentosMax) throw err;
+      await esperar(intento * 3000);
+    }
+  }
 }
