@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import { initSchema } from "./db/connection.js";
 import { authRouter } from "./routes/auth.js";
 import { dashboardRouter } from "./routes/dashboard.js";
 import { tesoreriaRouter } from "./routes/tesoreria.js";
@@ -14,7 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/health", (_req, res) => res.json({ status: "ok", fase: 3 }));
+app.get("/api/health", (_req, res) => res.json({ status: "ok", fase: 3, db: "postgres" }));
 app.use("/api/auth", authRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/tesoreria", tesoreriaRouter);
@@ -24,7 +25,26 @@ app.use("/api/inversionistas", inversionistasRouter);
 app.use("/api/comisiones", comisionesRouter);
 app.use("/api/juridico", juridicoRouter);
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`API TTC Capital (Fase 3) escuchando en http://localhost:${PORT}`);
+// Manejador de errores generico: las rutas ahora son asincronas (Postgres)
+// y cualquier error de consulta cae aqui via next(err) en vez de tronar
+// el proceso.
+app.use((err, _req, res, _next) => {
+  console.error(err);
+  res.status(500).json({ error: "Error interno del servidor" });
 });
+
+const PORT = process.env.PORT || 4000;
+
+// El esquema se asegura (CREATE TABLE IF NOT EXISTS) al arrancar, antes de
+// aceptar conexiones, para no depender de correr "npm run seed" a mano en
+// cada ambiente nuevo.
+initSchema()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`API TTC Capital (Fase 3) escuchando en http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("No se pudo inicializar el esquema de la base de datos:", err);
+    process.exit(1);
+  });
