@@ -33,8 +33,39 @@ if (!existingUser) {
 }
 
 const macrocategorias = ["Cobranza", "Financiamiento", "Inmuebles", "Inversionistas", "Comisiones", "Operacion"];
+
+// Catalogo real de macrocategorias de TTC Capital (seccion "Catalogo de
+// movimientos" del modelo financiero). Se agrega al catalogo ficticio de
+// arranque -sin reemplazarlo- para no romper los movimientos demo ya
+// cargados, y para permitir la importacion de datos reales autorizados
+// por el usuario (iniciativa personal, no un entregable academico).
+const macrocategoriasReales = [
+  "1. INGRESOS POR INTERESES",
+  "2. COMISIONES POR APERTURA DE CREDITO",
+  "3. COMISIONES INMOBILIARIAS",
+  "4. INGRESOS POR RENTAS INMOBILIARIAS",
+  "5. INGRESOS POR VENTA DE ACTIVOS",
+  "6. COLOCACION DE CREDITOS A CLIENTES",
+  "7. RECUPERACION DE CAPITAL",
+  "8. PAGO DE CAPITAL A INVERSIONISTAS",
+  "9. PAGO DE INTERESES A INVERSIONISTAS",
+  "10. ADMINISTRACION DE PAGOS Y TRASPASOS A INVERSIONISTAS",
+  "11. NOMINA Y COMPENSACIONES AL PERSONAL",
+  "12. GASTOS ADMINISTRATIVOS Y DE OFICINA",
+  "13. GASTOS LEGALES, FISCALES Y PREDIALES",
+  "14. GASTOS DE PUBLICIDAD, VIATICOS Y TRANSPORTE",
+  "15. OTROS GASTOS OPERATIVOS Y ANTICIPOS",
+  "16. COMPRA Y ADQUISICION DE INMUEBLES",
+  "17. GASTOS DE ESCRITURACION Y TRAMITES INMOBILIARIOS",
+  "18. GASTOS DE MANTENIMIENTO Y OPERACION DE INMUEBLES",
+  "19. GASTOS PERSONALES - VEHICULOS Y TARJETAS",
+  "20. GASTOS PERSONALES - HOGAR Y FAMILIA",
+  "NO OPERATIVO",
+];
+
 const insertMacro = db.prepare("INSERT OR IGNORE INTO macrocategoria (nombre) VALUES (?)");
 for (const nombre of macrocategorias) insertMacro.run(nombre);
+for (const nombre of macrocategoriasReales) insertMacro.run(nombre);
 const macroIds = Object.fromEntries(
   db.prepare("SELECT id, nombre FROM macrocategoria").all().map((m) => [m.nombre, m.id])
 );
